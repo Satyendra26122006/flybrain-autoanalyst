@@ -74,5 +74,14 @@ Compare routers (no FlyWire data needed for the small synthetic-graph dry run):
 `src/` ingestion, profiling, quality, statistics (tools), validation, insights, router_rules (A), brain_router (C), connectome, synthetic, reporting.
 
 ## Hosting
-Push code to GitHub (never `data/raw`). Ship only the trained checkpoint + processed tensors via Git LFS or Hugging Face.
-Deploy `app.py` on Hugging Face Spaces (Streamlit). Keep API keys in secrets.
+Deploy the public repository on [Streamlit Community Cloud](https://share.streamlit.io/):
+
+1. Sign in with the GitHub account that can access this repository.
+2. Choose **Create app**, then select `Satyendra26122006/flybrain-autoanalyst`, branch `main`, and file path `app.py`.
+3. Deploy. The app installs its Python dependencies from `requirements.txt`.
+
+The web app runs the complete available analyst toolkit. Until the FlyWire connections export has been supplied and
+the router trained, it reports and uses the rule-based analysis router. The full-graph checkpoint and raw data are
+excluded from Git; do not commit uploaded datasets, credentials, or private connection strings. To enable a trained
+connectome on a hosted deployment, provide the checkpoint through the hosting platform's secure storage and update
+the app's checkpoint path accordingly.

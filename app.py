@@ -299,7 +299,7 @@ if f:
                 "Rows are only flagged; none are removed automatically."
             )
         st.subheader("Descriptive statistics")
-        st.dataframe(df.describe(include="all").transpose(), use_container_width=True)
+        st.dataframe(profiling.descriptive_table(df), use_container_width=True)
         with st.expander("Full dataset profile"):
             st.json({k: v for k, v in p.items() if not isinstance(v, list)})
 

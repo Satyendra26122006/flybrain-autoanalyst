@@ -27,6 +27,16 @@ def profile(df: pd.DataFrame) -> dict:
     }
 
 
+def descriptive_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Return describe output with mixed categorical top values safe for Arrow tables."""
+    summary = df.describe(include="all").transpose()
+    if "top" in summary.columns:
+        summary["top"] = summary["top"].map(
+            lambda value: str(value) if pd.notna(value) else None
+        )
+    return summary
+
+
 def feature_vector(p: dict) -> np.ndarray:
     return np.array([
         np.log1p(p["n_rows"]) / 15, np.log1p(p["n_cols"]) / 6,

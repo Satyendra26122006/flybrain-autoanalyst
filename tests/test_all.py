@@ -1,4 +1,5 @@
 import numpy as np, pandas as pd, torch
+import pyarrow as pa
 from src import advanced_statistics, analytics, brain_router, cleaning, ingestion, profiling, insights, reporting, time_series, visualization
 from src.validation import bh_adjust
 from src.router_rules import select_analyses
@@ -22,6 +23,17 @@ def test_pipeline_finds_correlation():
     df = sample(); p = profiling.profile(df)
     f = insights.run(df, p, select_analyses(p))
     assert any(x.tool == "correlation" for x in f)
+
+
+def test_descriptive_table_handles_mixed_boolean_and_text_modes():
+    df = pd.DataFrame({
+        "label": ["alpha", "beta", "alpha", "alpha"],
+        "flag": [True, False, True, True],
+        "measure": [1.0, 2.0, 3.0, 4.0],
+    })
+    summary = profiling.descriptive_table(df)
+    assert summary.loc["flag", "top"] in {"True", "False"}
+    assert pa.Table.from_pandas(summary).num_rows == len(summary)
 
 
 def test_gradients_reach_all_params():

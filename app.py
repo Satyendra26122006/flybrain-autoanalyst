@@ -91,6 +91,8 @@ with st.sidebar:
     st.caption("Maximum upload size: 50 MB")
     st.markdown("**Workflow**")
     st.caption(    "1. Review and clean\n2. Explore and analyze\n3. Model and forecast\n4. Export your results")
+    st.divider()
+    st.link_button("View source on GitHub", "https://github.com/Satyendra26122006/flybrain-autoanalyst")
 
 f = st.file_uploader(
     "Upload a dataset",

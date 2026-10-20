@@ -30,6 +30,16 @@ def build_training_set(n_datasets=300, seed=0):
     """X: feature vectors; Y[i,j]=1 if tool j produced a valid finding on dataset i."""
     rng = np.random.default_rng(seed); X, Y = [], []
     for _ in range(n_datasets):
-        df = make_dataset(rng); p = profile(df)
-        X.append(feature_vector(p)); Y.append([float(len(TOOLS[t](df, p)) > 0) for t in TASKS])
+        df = make_dataset(rng)
+        x, y = label_dataset(df)
+        X.append(x); Y.append(y)
     return np.stack(X), np.array(Y, dtype=np.float32)
+
+
+def label_dataset(df):
+    """Return the router input and deterministic synthetic-task labels for one dataset."""
+    p = profile(df)
+    return (
+        feature_vector(p),
+        np.asarray([float(len(TOOLS[t](df, p)) > 0) for t in TASKS], dtype=np.float32),
+    )

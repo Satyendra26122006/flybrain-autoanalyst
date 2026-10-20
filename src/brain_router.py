@@ -12,22 +12,42 @@ from .insights import TASKS
 CHECKPOINT_VERSION = 1
 
 
-def train(t, X, Y, epochs=30, lr=3e-3, l2=1.0, steps=5, device="cpu", staged=True, seed=0):
+def train(
+    t,
+    X,
+    Y,
+    epochs=30,
+    lr=3e-3,
+    l2=1.0,
+    steps=5,
+    device="cpu",
+    staged=True,
+    seed=0,
+    batch_size=16,
+):
+    if batch_size < 1:
+        raise ValueError("Training batch size must be positive.")
     torch.manual_seed(seed)
     m = Connectome(t, N_FEATURES, len(TASKS), steps=steps, seed=seed).to(device)
-    X, Y = torch.tensor(X, device=device), torch.tensor(Y, device=device)
+    X = torch.as_tensor(X, dtype=torch.float32, device=device)
+    Y = torch.as_tensor(Y, dtype=torch.float32, device=device)
     for stage in (["io", "all"] if staged else ["all"]):   # io first, then every neuron/synapse
         for n_, p in m.named_parameters():
             p.requires_grad = (stage == "all") or n_.startswith(("encoder", "readout"))
         opt = torch.optim.Adam([p for p in m.parameters() if p.requires_grad], lr=lr)
         for ep in range(epochs):
             perm = torch.randperm(len(X))
-            for i in range(0, len(X), 16):
-                b = perm[i:i + 16]
-                logits = torch.stack([m(x) for x in X[b]])
-                loss = F.binary_cross_entropy_with_logits(logits, Y[b]) + l2 * 1e-2 * m.weight_penalty()
-                opt.zero_grad(); loss.backward()
-                torch.nn.utils.clip_grad_norm_(m.parameters(), 1.0); opt.step()
+            for i in range(0, len(X), batch_size):
+                batch = perm[i:i + batch_size]
+                opt.zero_grad(set_to_none=True)
+                for index in batch:
+                    loss = (
+                        F.binary_cross_entropy_with_logits(m(X[index]), Y[index])
+                        + l2 * 1e-2 * m.weight_penalty()
+                    )
+                    (loss / len(batch)).backward()
+                torch.nn.utils.clip_grad_norm_(m.parameters(), 1.0)
+                opt.step()
     return m
 
 

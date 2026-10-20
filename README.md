@@ -52,18 +52,27 @@ as data, not as instructions to execute.
 The connectome routes datasets to the existing, exact Python analysis tools; it does not replace their computations.
 To train it on the full FlyWire graph:
 
-1. Download the FlyWire Codex connections CSV/CSV.GZ and put it at `data/raw/connections.csv.gz`. Record the release
-   and citation. The dataset is not included in this repository.
-2. Train and save the full-graph router:
+1. Download both `connections.csv.gz` and `neurons.csv.gz` from FlyWire Codex snapshot **783 (October 2023)** into
+   `data/raw/`. The official public files are [connections](https://storage.googleapis.com/flywire-data/codex/data/fafb/783/connections.csv.gz)
+   and [neurons](https://storage.googleapis.com/flywire-data/codex/data/fafb/783/neurons.csv.gz). Do not commit the
+   source data to this repository.
+2. Train and save the full-graph router, supplying the complete neuron inventory so neurons with no listed edges
+   are included:
    `python train_brain.py`
-   This keeps edges with at least one synapse by default. Use `--connections`, `--min-syn`, `--epochs`, and
-   `--device` to override defaults. For a GPU, install the matching PyTorch build before training; a full graph can be
-   memory- and compute-intensive, especially on CPU.
+   This uses every inventory neuron and retains edges with at least one synapse by default. Use `--connections`,
+   `--neurons`, `--min-syn`, `--datasets`, `--epochs`, `--steps`, `--batch-size`, and `--device` to override defaults.
+   Training targets are generated from synthetic analyst tasks; they are not biological ground truth. CPU training
+   may take many hours with the default training set; a CUDA GPU is recommended.
 3. Start the app with `streamlit run app.py`. It loads `checkpoints/brain_router.pt` automatically. If no checkpoint
    exists, it clearly reports that it is using the rule-based baseline instead.
 
+The snapshot's neuron inventory contains 139,255 rows. The connection export contains 3,869,878 rows before
+aggregation. Cite the underlying connectome as: Dorkenwald et al. (2024), “Neuronal wiring diagram of an adult
+brain,” *Nature* 634, 124–138. https://doi.org/10.1038/s41586-024-07558-y. Codex describes snapshot 783 as
+October 2023.
+
 To build tensors separately, run:
-`python -c "from src.connectome import build_tensors as b; b('data/raw/connections.csv.gz', min_syn=1, out_path='data/processed/tensors.pt')"`
+`python -c "from src.connectome import build_tensors as b; b('data/raw/connections.csv.gz', min_syn=1, out_path='data/processed/tensors.pt', neurons_path='data/raw/neurons.csv.gz')"`
 
 Compare routers (no FlyWire data needed for the small synthetic-graph dry run):
 `python experiment.py` or `python experiment.py data/processed/tensors.pt`
@@ -80,8 +89,9 @@ Deploy the public repository on [Streamlit Community Cloud](https://share.stream
 2. Choose **Create app**, then select `Satyendra26122006/flybrain-autoanalyst`, branch `main`, and file path `app.py`.
 3. Deploy. The app installs its Python dependencies from `requirements.txt`.
 
-The web app runs the complete available analyst toolkit. Until the FlyWire connections export has been supplied and
-the router trained, it reports and uses the rule-based analysis router. The full-graph checkpoint and raw data are
-excluded from Git; do not commit uploaded datasets, credentials, or private connection strings. To enable a trained
-connectome on a hosted deployment, provide the checkpoint through the hosting platform's secure storage and update
-the app's checkpoint path accordingly.
+The web app runs the complete available analyst toolkit. Until a validated trained FlyWire checkpoint is supplied,
+it reports and uses the rule-based analysis router. The app can load a checkpoint from local storage or download a
+verified checkpoint from an HTTPS URL. For Streamlit Community Cloud, put `BRAIN_CHECKPOINT_URL` and
+`BRAIN_CHECKPOINT_SHA256` in the app's **Manage app → Settings → Secrets**. The app verifies the SHA-256 digest
+before loading the checkpoint. Keep raw data and checkpoint files out of Git; do not commit uploaded datasets,
+credentials, or private connection strings.

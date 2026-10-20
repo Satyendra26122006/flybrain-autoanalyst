@@ -17,8 +17,8 @@ def _col(df, *cands):
     raise KeyError(f"none of {cands} in {list(df.columns)}")
 
 
-def build_tensors(connections_path, min_syn=5, out_path=None):
-    """Read Codex connections table -> src, dst, init_w, sign tensors."""
+def build_tensors(connections_path, min_syn=5, out_path=None, neurons_path=None):
+    """Read Codex connections and optional neuron inventory into graph tensors."""
     df = pd.read_csv(connections_path)  # works with .csv or .csv.gz
     pre, post = _col(df, "pre_root", "pre_pt"), _col(df, "post_root", "post_pt")
     syn = _col(df, "syn_count")
@@ -26,14 +26,32 @@ def build_tensors(connections_path, min_syn=5, out_path=None):
     df["_s"] = np.where(df[nt].isin(NEG_NT), -1.0, 1.0) if nt else 1.0
     g = df.groupby([pre, post]).agg(w=(syn, "sum"), s=("_s", "mean")).reset_index()
     g = g[g.w >= min_syn]
-    ids = pd.unique(np.concatenate([g[pre].values, g[post].values]))
+    edge_ids = np.concatenate([g[pre].values, g[post].values])
+    if neurons_path is not None:
+        neurons = pd.read_csv(neurons_path, usecols=lambda column: column.lower() == "root_id")
+        if neurons.shape[1] != 1:
+            raise ValueError("Neuron inventory must contain exactly one root_id column.")
+        neuron_ids_series = pd.to_numeric(neurons.iloc[:, 0], errors="raise")
+        if not pd.api.types.is_integer_dtype(neuron_ids_series.dtype):
+            raise ValueError("Neuron inventory root IDs must be finite integers.")
+        neuron_ids = neuron_ids_series.to_numpy()
+        missing_endpoints = np.setdiff1d(edge_ids, neuron_ids, assume_unique=False)
+        if len(missing_endpoints):
+            raise ValueError(
+                f"Neuron inventory is missing {len(missing_endpoints):,} connection endpoint IDs."
+            )
+        ids = pd.unique(np.concatenate([neuron_ids, edge_ids]))
+    else:
+        ids = pd.unique(edge_ids)
     index = {nid: i for i, nid in enumerate(ids)}
     t = {
         "src": torch.tensor(g[pre].map(index).values, dtype=torch.long),
         "dst": torch.tensor(g[post].map(index).values, dtype=torch.long),
         "init_w": torch.tensor(g.w.values, dtype=torch.float32),
         "sign": torch.tensor(np.where(g.s.values < 0, -1.0, 1.0), dtype=torch.float32),
-        "n": len(ids), "root_ids": torch.tensor(ids.astype("int64")),
+        "n": len(ids),
+        "root_ids": torch.tensor(ids.astype("int64")),
+        "includes_neuron_inventory": neurons_path is not None,
     }
     if out_path:
         torch.save(t, out_path)

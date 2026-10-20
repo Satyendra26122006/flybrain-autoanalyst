@@ -1,5 +1,7 @@
 # AutoAnalyst
 
+**Use the app:** [Open AutoAnalyst on Streamlit](https://satyendra26122006-flybrain-autoanalyst-app-xxm1se.streamlit.app/)
+
 Copyright (c) 2026 Satyendra26122006. All rights reserved. No permission is granted to use, copy, modify, or
 distribute this project without prior written permission. See [LICENSE](./LICENSE).
 

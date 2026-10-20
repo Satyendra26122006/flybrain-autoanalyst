@@ -1,9 +1,54 @@
-Copyright (c) 2026 Satyendra26122006. All rights reserved.
+PROPRIETARY SOFTWARE LICENSE
+ALL RIGHTS RESERVED
 
-This project and its contents are protected by copyright. No license or other permission is granted to any person
-to use, reproduce, copy, modify, adapt, publish, distribute, sublicense, sell, publicly display, or create
-derivative works from this project or any part of it, for any purpose, without prior written permission from the
-copyright holder.
+Copyright (c) 2026 Satyendra26122006
 
-All rights not expressly granted in writing are reserved, except for rights that cannot be restricted under
-applicable law. This notice does not override the terms of the platform hosting this repository.
+1. Ownership
+
+This repository and its contents, including source code, documentation, designs, and
+other materials (the "Work"), are protected by copyright and other applicable laws.
+The copyright holder retains all rights, title, and interest in the Work.
+
+2. No license granted
+
+No license or permission to use the Work is granted by making it publicly available,
+including any implied license. Except for rights that cannot lawfully be restricted
+and permissions necessarily provided by the platform hosting this repository, you
+may not, without the copyright holder's prior written permission:
+
+- use, run, execute, or incorporate the Work or any part of it;
+- copy, reproduce, download, or make the Work available elsewhere;
+- modify, adapt, translate, or create derivative works from the Work;
+- publish, distribute, sublicense, sell, rent, or otherwise commercially exploit
+  the Work; or
+- remove or alter copyright, attribution, or proprietary notices.
+
+Written permission must identify the permitted use and scope. Any permission is
+limited to the terms expressly stated in that written authorization.
+
+3. Third-party materials
+
+Materials included in or used by the Work may belong to third parties and may be
+subject to separate license terms. This notice does not grant rights to those
+materials. You are responsible for identifying and complying with applicable
+third-party terms.
+
+4. No warranty
+
+To the maximum extent permitted by applicable law, the Work is provided "AS IS"
+and "AS AVAILABLE", without warranties or conditions of any kind, whether express,
+implied, or statutory, including warranties of merchantability, fitness for a
+particular purpose, title, and non-infringement.
+
+5. Limitation of liability
+
+To the maximum extent permitted by applicable law, the copyright holder will not
+be liable for any damages arising out of or related to the Work or this notice,
+under any legal theory. Nothing in this notice excludes liability that cannot
+lawfully be excluded or limited.
+
+6. Reservation of rights
+
+All rights not expressly granted in a separate written authorization are reserved.
+Nothing in this notice overrides applicable law or the terms governing the
+repository-hosting platform.

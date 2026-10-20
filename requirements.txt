@@ -1,0 +1,17 @@
+pandas
+numpy
+scipy
+scikit-learn
+duckdb
+networkx
+plotly
+streamlit
+openpyxl
+pyarrow
+pytest
+torch
+reportlab
+statsmodels
+sqlalchemy
+psycopg[binary]
+pymysql

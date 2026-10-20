@@ -1,11 +1,8 @@
-import numpy as np, pandas as pd, torch
+import numpy as np, pandas as pd
 import pyarrow as pa
-from src import advanced_statistics, analytics, brain_router, cleaning, ingestion, profiling, insights, reporting, time_series, visualization
+from src import advanced_statistics, analytics, cleaning, ingestion, profiling, insights, reporting, time_series, visualization
 from src.validation import bh_adjust
 from src.router_rules import select_analyses
-from src.connectome import build_tensors, random_connectome, Connectome, shuffled, subset
-from src.profiling import N_FEATURES
-from src.insights import TASKS
 
 
 def sample():
@@ -34,70 +31,6 @@ def test_descriptive_table_handles_mixed_boolean_and_text_modes():
     summary = profiling.descriptive_table(df)
     assert summary.loc["flag", "top"] in {"True", "False"}
     assert pa.Table.from_pandas(summary).num_rows == len(summary)
-
-
-def test_gradients_reach_all_params():
-    m = Connectome(random_connectome(100, 800), N_FEATURES, len(TASKS))
-    m(torch.rand(N_FEATURES)).sum().backward()
-    assert m.log_w.grad is not None and m.bias.grad is not None and m.gain.grad is not None
-
-
-def test_brain_trainer_accumulates_minibatch_gradients():
-    graph = random_connectome(30, 120)
-    features = np.zeros((2, N_FEATURES), dtype=np.float32)
-    labels = np.zeros((2, len(TASKS)), dtype=np.float32)
-    model = brain_router.train(
-        graph,
-        features,
-        labels,
-        epochs=1,
-        steps=1,
-        staged=False,
-        batch_size=2,
-    )
-    assert model(torch.as_tensor(features[0])).shape == (len(TASKS),)
-
-
-def test_shuffle_and_subset():
-    t = random_connectome(100, 800)
-    assert shuffled(t)["src"].shape == t["src"].shape
-    assert subset(t, torch.arange(50))["n"] == 50
-
-
-def test_build_tensors_includes_isolated_neurons(tmp_path):
-    connections_path = tmp_path / "connections.csv.gz"
-    neurons_path = tmp_path / "neurons.csv.gz"
-    pd.DataFrame({
-        "pre_root_id": [100, 200],
-        "post_root_id": [200, 100],
-        "syn_count": [4, 6],
-        "nt_type": ["ACH", "GABA"],
-    }).to_csv(connections_path, index=False, compression="gzip")
-    pd.DataFrame({"root_id": [100, 200, 300]}).to_csv(
-        neurons_path, index=False, compression="gzip"
-    )
-
-    graph = build_tensors(connections_path, min_syn=1, neurons_path=neurons_path)
-    assert graph["n"] == 3
-    assert graph["root_ids"].tolist() == [100, 200, 300]
-    assert len(graph["src"]) == 2
-    assert graph["includes_neuron_inventory"] is True
-
-    pd.DataFrame({"root_id": [100, 300]}).to_csv(
-        neurons_path, index=False, compression="gzip"
-    )
-    with np.testing.assert_raises_regex(ValueError, "missing 1 connection endpoint"):
-        build_tensors(connections_path, min_syn=1, neurons_path=neurons_path)
-
-
-def test_brain_checkpoint_round_trip(tmp_path):
-    t = random_connectome(30, 100)
-    model = Connectome(t, N_FEATURES, len(TASKS))
-    path = tmp_path / "brain.pt"
-    brain_router.save_checkpoint(model, path)
-    loaded = brain_router.load_checkpoint(path)
-    x = torch.rand(N_FEATURES)
-    torch.testing.assert_close(loaded(x), model(x))
 
 
 def test_visualization_figures_handle_common_data():

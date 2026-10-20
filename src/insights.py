@@ -1,4 +1,4 @@
-"""Run the tools a router selected."""
+"""Run the selected analysis tools."""
 from . import statistics as S
 from .quality import check
 

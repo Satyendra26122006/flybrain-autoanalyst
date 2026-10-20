@@ -1,9 +1,8 @@
-"""Dataset profile + fixed-length feature vector (the brain's 'eyes')."""
+"""Dataset profiling and descriptive statistics."""
 import numpy as np
 import pandas as pd
 
 TARGET_NAMES = {"target", "label", "y", "churn", "class", "outcome"}
-N_FEATURES = 10
 
 
 def profile(df: pd.DataFrame) -> dict:
@@ -35,13 +34,3 @@ def descriptive_table(df: pd.DataFrame) -> pd.DataFrame:
             lambda value: str(value) if pd.notna(value) else None
         )
     return summary
-
-
-def feature_vector(p: dict) -> np.ndarray:
-    return np.array([
-        np.log1p(p["n_rows"]) / 15, np.log1p(p["n_cols"]) / 6,
-        len(p["numeric_columns"]) / 20, len(p["categorical_columns"]) / 10,
-        float(p["has_datetime"]), float(p["has_target"]),
-        p["missing_rate"], p["duplicate_rate"], min(p["mean_abs_skew"], 10) / 10,
-        len(p["id_columns"]) / 3,
-    ], dtype=np.float32)

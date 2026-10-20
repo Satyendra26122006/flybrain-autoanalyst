@@ -9,7 +9,6 @@ streamlit
 openpyxl
 pyarrow
 pytest
-torch
 reportlab
 statsmodels
 sqlalchemy

@@ -3,18 +3,13 @@ import pandas as pd
 import sqlite3
 import plotly.express as px
 import os
-import hashlib
 from sqlalchemy.exc import SQLAlchemyError
 from io import BytesIO
 from pathlib import Path
-import tempfile
-from urllib.request import urlopen
-from streamlit.errors import StreamlitSecretNotFoundError
 
 from src import (
     advanced_statistics,
     analytics,
-    brain_router,
     cleaning,
     ingestion,
     profiling,
@@ -26,12 +21,11 @@ from src import (
 from src.router_rules import select_analyses
 
 st.set_page_config(
-    page_title="FlyBrain AutoAnalyst",
-    page_icon="🧠",
+    page_title="AutoAnalyst",
+    page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded",
 )
-CHECKPOINT = Path("checkpoints/brain_router.pt")
 MAX_UPLOAD_BYTES = 50 * 1024 * 1024
 
 st.markdown(
@@ -58,8 +52,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.markdown('<div class="hero-kicker">FLYBRAIN · DATA WORKBENCH</div>', unsafe_allow_html=True)
-st.title("FlyBrain AutoAnalyst")
+st.markdown('<div class="hero-kicker">DATA ANALYSIS WORKBENCH</div>', unsafe_allow_html=True)
+st.title("AutoAnalyst")
 st.markdown(
     '<p class="hero-copy">Explore, clean, visualize, and analyze your data in one workspace. '
     'Your original upload stays unchanged.</p>',
@@ -75,76 +69,10 @@ def render_chart(figure):
     )
 
 
-@st.cache_resource
-def load_brain(path, checkpoint_url="", expected_sha256=""):
-    if checkpoint_url:
-        if not checkpoint_url.startswith("https://"):
-            raise ValueError("The hosted brain checkpoint URL must use HTTPS.")
-        if len(expected_sha256) != 64 or any(
-            character not in "0123456789abcdefABCDEF" for character in expected_sha256
-        ):
-            raise ValueError("BRAIN_CHECKPOINT_SHA256 must be a 64-character SHA-256 hex digest.")
-        path = str(Path(tempfile.gettempdir()) / f"flybrain-{expected_sha256.lower()}.pt")
-        checkpoint_path = Path(path)
-        digest = hashlib.sha256()
-        if checkpoint_path.is_file():
-            with checkpoint_path.open("rb") as checkpoint_file:
-                for chunk in iter(lambda: checkpoint_file.read(1024 * 1024), b""):
-                    digest.update(chunk)
-        if not checkpoint_path.is_file() or digest.hexdigest() != expected_sha256.lower():
-            partial_path = checkpoint_path.with_suffix(".download")
-            digest = hashlib.sha256()
-            try:
-                with urlopen(checkpoint_url, timeout=60) as response, partial_path.open("wb") as output:
-                    while chunk := response.read(1024 * 1024):
-                        digest.update(chunk)
-                        output.write(chunk)
-            except OSError:
-                if partial_path.exists():
-                    partial_path.unlink()
-                raise
-            if digest.hexdigest() != expected_sha256.lower():
-                partial_path.unlink()
-                raise ValueError("Downloaded brain checkpoint SHA-256 does not match.")
-            os.replace(partial_path, checkpoint_path)
-    return brain_router.load_checkpoint(path)
-
-
-def deployment_setting(name):
-    value = os.environ.get(name)
-    if value:
-        return value
-    try:
-        return st.secrets.get(name, "")
-    except StreamlitSecretNotFoundError:
-        return ""
-
-
-checkpoint_url = deployment_setting("BRAIN_CHECKPOINT_URL")
-checkpoint_sha256 = deployment_setting("BRAIN_CHECKPOINT_SHA256")
-brain_error = None
-try:
-    brain = (
-        load_brain(str(CHECKPOINT), checkpoint_url, checkpoint_sha256)
-        if CHECKPOINT.is_file() or checkpoint_url
-        else None
-    )
-except (OSError, ValueError, RuntimeError, KeyError, TypeError):
-    brain = None
-    brain_error = "The trained checkpoint could not be loaded. Check the deployment URL, SHA-256, and checkpoint format."
 with st.sidebar:
     st.subheader("Workspace")
     st.caption("Upload a dataset to begin. Files are analyzed in this app session.")
-    if brain is None:
-        if brain_error:
-            st.error("Trained router unavailable; using the rule-based baseline.")
-            st.caption(brain_error)
-        else:
-            st.info("Router: rule-based baseline")
-            st.caption("Build a FlyWire checkpoint to enable connectome routing.")
-    else:
-        st.success(f"Router: trained connectome · {brain.n:,} neurons")
-        st.caption("Routing labels are synthetic analyst tasks, not biological ground truth.")
+    st.caption("Core analysis suggestions use transparent rules based on the dataset profile.")
     st.divider()
     st.markdown("**Supported files**")
     st.caption("CSV · Excel (.xlsx) · JSON · JSONL · Parquet · SQLite")
@@ -734,10 +662,9 @@ if f:
             st.dataframe(st.session_state[basket_state_key], hide_index=True, use_container_width=True)
 
     with insights_tab:
-        tasks = brain_router.select_analyses(brain, p) if brain is not None else select_analyses(p)
+        tasks = select_analyses(p)
         st.caption(
-            f"Router: {'trained connectome' if brain is not None else 'rule-based baseline'}"
-            f" · Core tools: {', '.join(tasks) if tasks else 'none selected'}"
+            f"Suggested core checks: {', '.join(tasks) if tasks else 'none selected'}"
         )
         st.markdown("**Additional statistical tests**")
         add_on_labels = {

@@ -1,4 +1,4 @@
-"""Version A: deterministic baseline router."""
+"""Select core analyses with transparent, deterministic data-profile rules."""
 
 
 def select_analyses(p: dict) -> list[str]:

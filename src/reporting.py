@@ -97,8 +97,8 @@ def to_pdf(
         leftMargin=0.7 * inch,
         topMargin=0.72 * inch,
         bottomMargin=0.72 * inch,
-        title=f"FlyBrain AutoAnalyst - {name}",
-        author="FlyBrain AutoAnalyst",
+        title=f"AutoAnalyst - {name}",
+        author="AutoAnalyst",
     )
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(
@@ -149,7 +149,7 @@ def to_pdf(
         spaceAfter=4,
     ))
     story = [
-        Paragraph("FlyBrain AutoAnalyst", styles["ReportTitle"]),
+        Paragraph("AutoAnalyst", styles["ReportTitle"]),
         Paragraph(f"Analysis report for {_pdf_text(name)}", styles["ReportSubtitle"]),
         Paragraph("Executive summary", styles["ReportSection"]),
         Paragraph(
@@ -347,7 +347,7 @@ def to_pdf(
         canvas.saveState()
         canvas.setFillColor(BLUE)
         canvas.rect(0, letter[1] - 0.23 * inch, page_width, 0.23 * inch, stroke=0, fill=1)
-        _Footer(f"FlyBrain AutoAnalyst | {name}").drawOn(
+        _Footer(f"AutoAnalyst | {name}").drawOn(
             canvas, doc.leftMargin, 0.1 * inch
         )
         canvas.restoreState()

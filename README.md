@@ -1,5 +1,8 @@
 # AutoAnalyst
 
+Copyright (c) 2026 Satyendra26122006. All rights reserved. No permission is granted to use, copy, modify, or
+distribute this project without prior written permission. See [LICENSE](./LICENSE).
+
 An interactive data-analysis workbench for loading, cleaning, exploring, modeling, and reporting on datasets.
 Transparent data-profile rules suggest core checks, and Python tools perform the calculations and attach evidence,
 uncertainty, and caveats.
@@ -51,13 +54,3 @@ outputs before acting on them. Uploaded cell contents are treated as data, not a
 ## Layout
 `src/` ingestion, profiling, quality, statistics, validation, insights, transparent analysis-selection rules,
 cleaning, visualization, modeling, forecasting, and reporting.
-
-## Hosting
-Deploy the public repository on [Streamlit Community Cloud](https://share.streamlit.io/):
-
-1. Sign in with the GitHub account that can access this repository.
-2. Choose **Create app**, then select `Satyendra26122006/flybrain-autoanalyst`, branch `main`, and file path `app.py`.
-3. Deploy. The app installs its Python dependencies from `requirements.txt`.
-
-The web app runs the available analyst toolkit and suggests core analyses using transparent data-profile rules.
-Keep uploaded datasets, credentials, and private connection strings out of Git.
